@@ -60,10 +60,30 @@ class CourseController {
       async destroy(req, res) {
             console.log(req.params.id);
             try {
-                  await Course.deleteOne({ _id: req.params.id });
-
+                  await Course.delete({ _id: req.params.id });
                   res.redirect('back');
 
+            } catch (error) {
+                  console.log(error);
+            }
+      }
+
+      // [DELETE] /course/:id/force
+      async forceDestroy(req, res) {
+            try {
+                  await Course.deleteOne({ _id: req.params.id });
+                  res.redirect('back');
+            } catch (error) {
+                  console.log(error);
+            }
+      }
+
+
+      // [PATCH] /course/:id/restore
+      async restore(req, res) {
+            try {
+                  await Course.restore({ _id: req.params.id }); // Chỉ cần truyền _id
+                  res.redirect('back');
             } catch (error) {
                   console.log(error);
             }
