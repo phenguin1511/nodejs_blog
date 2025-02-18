@@ -13,9 +13,13 @@
                   {{#each courses}}
                   <div class="col-sm-6 col-lg-4">
                         <div class="card mt-2" style="width: 18rem;">
-                              <img class="card-img-top" src="{{this.image}}" alt="Card image cap">
+                              <a href="/course/{{this.slug}}">
+                                    <img class="card-img-top" src="{{this.image}}" alt="Card image cap">
+                              </a>
                               <div class="card-body">
-                                    <h5 class="card-title">{{this.name}}</h5>
+                                    <a href="/course/{{this.slug}}" style="text-decoration: none; color: inherit;">
+                                          <h5 class="card-title">{{this.name}}</h5>
+                                    </a>
                                     <p class="card-text">{{this.description}}</p>
                                     <a href="#" class="btn btn-primary">Go somewhere</a>
                               </div>
