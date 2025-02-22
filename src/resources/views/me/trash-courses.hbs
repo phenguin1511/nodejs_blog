@@ -1,11 +1,27 @@
 <div class="container mt-5">
       <a href="/me/stored/courses" class="btn btn-warning mb-3">Danh Sách Khóa Học</a>
       <h2 class="text-center mb-4">📚 Thùng Rác</h2>
-
+      <div class="mt-2">
+            <div class="form-check mt-2">
+                  <input class="form-check-input" type="checkbox" value="" id="checkbox-all">
+                  <label class="form-check-label" for="checkbox-all">
+                        Chọn Tất Cả
+                  </label>
+            </div>
+            <div>
+                  <select class="form-select mt-2 checkbox-select-all-options" aria-label="Default select example">
+                        <option selected>Chọn Hành Động</option>
+                        <option value="restore">Khôi Phục</option>
+                        <option value="force-delete">Xóa Vĩnh Viễn</option>
+                  </select>
+            </div>
+            <button class="btn btn-primary btn-action mt-2 disabled">Thực Hiện</button>
+      </div>
       <div class="table-responsive">
             <table class="table table-striped table-hover align-middle text-center">
                   <thead class="table-dark">
                         <tr>
+                              <th scope="col">Chọn</th>
                               <th scope="col">#</th>
                               <th scope="col">Tên Khóa Học</th>
                               <th scope="col">Mô Tả</th>
@@ -16,6 +32,8 @@
                   <tbody>
                         {{#each courses}}
                         <tr>
+                              <td> <input class="form-check-input checkbox" type="checkbox" name="courseIds[]"
+                                          value="{{this._id}}">
                               <th scope="row">{{sum @index 1 }}</th>
                               <td class="fw-bold">{{this.name}}</td>
                               <td>{{this.description}}</td>
@@ -92,6 +110,19 @@
 <form action="/course/{{this._id}}/restore" method="POST" id="restoreForm">
       <input type="hidden" name="_method" value="PATCH">
 </form>
+
+<!-- Form xóa vĩnh viễn nhiều khóa học -->
+<form action="/course/handle-form-actions" method="POST" id="bulkDeleteForm">
+      <input type="hidden" name="action" value="force-delete">
+      <input type="hidden" name="courseIds" id="bulkDeleteIds">
+</form>
+
+<!-- Form khôi phục nhiều khóa học -->
+<form action="/course/handle-form-actions" method="POST" id="bulkRestoreForm">
+      <input type="hidden" name="action" value="restore">
+      <input type="hidden" name="courseIds" id="bulkRestoreIds">
+</form>
+
 <script>
       document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', function () {
@@ -112,6 +143,67 @@
       });
       document.querySelector('#confirmRestore').addEventListener('click', function () {
             document.querySelector('#restoreForm').submit();
+      });
+      document.addEventListener("DOMContentLoaded", function () {
+            var checkboxAll = document.querySelector("#checkbox-all");
+            var checkboxes = document.querySelectorAll('input[name="courseIds[]"]');
+            var btnAction = document.querySelector(".btn-action");
+            var selectAction = document.querySelector(".checkbox-select-all-options");
+
+            // Chọn tất cả checkbox
+            checkboxAll.addEventListener("change", function () {
+                  checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+                  toggleActionButton();
+            });
+
+            // Khi thay đổi checkbox, kiểm tra để bật/tắt nút "Thực Hiện"
+            checkboxes.forEach(checkbox => {
+                  checkbox.addEventListener("change", toggleActionButton);
+            });
+
+            function toggleActionButton() {
+                  var checked = document.querySelectorAll('input[name="courseIds[]"]:checked').length > 0;
+                  btnAction.classList.toggle("disabled", !checked);
+            }
+
+            // Xử lý khi nhấn "Thực Hiện"
+            btnAction.addEventListener("click", function () {
+                  var selectedOption = selectAction.value;
+                  var checkedCheckboxes = document.querySelectorAll('input[name="courseIds[]"]:checked');
+                  var courseIds = Array.from(checkedCheckboxes).map(checkbox => checkbox.value);
+
+                  if (courseIds.length > 0) {
+                        var form = document.createElement("form");
+                        form.method = "POST";
+                        form.action = "/course/handle-form-actions";
+
+                        var actionInput = document.createElement("input");
+                        actionInput.type = "hidden";
+                        actionInput.name = "action";
+                        actionInput.value = selectedOption;
+                        form.appendChild(actionInput);
+
+                        courseIds.forEach(id => {
+                              var input = document.createElement("input");
+                              input.type = "hidden";
+                              input.name = "courseIds[]";
+                              input.value = id;
+                              form.appendChild(input);
+                        });
+
+                        document.body.appendChild(form);
+
+                        if (selectedOption === "force-delete") {
+                              if (confirm("Bạn có chắc chắn muốn xóa vĩnh viễn các khóa học đã chọn không?")) {
+                                    form.submit();
+                              }
+                        } else if (selectedOption === "restore") {
+                              if (confirm("Bạn có muốn khôi phục các khóa học đã chọn không?")) {
+                                    form.submit();
+                              }
+                        }
+                  }
+            });
       });
 
 </script>

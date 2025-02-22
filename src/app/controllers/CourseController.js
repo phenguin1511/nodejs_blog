@@ -91,7 +91,6 @@ class CourseController {
 
       // [POST] /course/handle-form-actions
       async handleFormActions(req, res) {
-            console.log(req.body);
             try {
                   switch (req.body.action) {
                         case 'delete':
@@ -103,7 +102,7 @@ class CourseController {
                               await Course.restore({ _id: { $in: req.body.courseIds } });
                               break;
                         case 'force-delete':
-                              await Course.deleteOne({ _id: { $in: req.body.courseIds } });
+                              await Course.deleteMany({ _id: { $in: req.body.courseIds } });
                               break;
                         default:
                               console.log('Action is invalid');
