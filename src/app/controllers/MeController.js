@@ -10,7 +10,6 @@ class MeController {
                   let coursesDeleted = await Course.countDocumentsDeleted({
                         deletedAt: { $ne: null }
                   });
-                  console.log(coursesDeleted);
 
                   let courses = await Course.find();
 
@@ -37,6 +36,8 @@ class MeController {
                   console.log(error);
             }
       }
+
+
 }
 
 module.exports = new MeController;

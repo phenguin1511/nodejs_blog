@@ -1,6 +1,27 @@
 <div class="container mt-5">
       <h2 class="text-center mb-4">📚 Khóa Học Của Tôi</h2>
-      <a href="/me/trash/courses" class="btn btn-danger position-relative p-3 rounded-3 shadow-sm">
+
+      <div class="mt-2">
+            <div class="form-check mt-2">
+                  <input class="form-check-input" type="checkbox" value="" id="checkbox-all" checked>
+                  <label class="form-check-label" for="checkbox-all">
+                        Chọn Tất Cả
+                  </label>
+            </div>
+            <div>
+                  <select class="form-select mt-2 checkbox-select-all-options" aria-label="Default select example">
+                        <option selected>Chọn Hành Động</option>
+                        <option value="delete">Xóa</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                        <option value="4">Four</option>
+                        <option value="5">Five</option>
+                  </select>
+            </div>
+            <button class="btn btn-primary btn-action mt-2 disabled">Thực Hiện</button>
+      </div>
+
+      <a href="/me/trash/courses" class="btn btn-danger position-relative p-3 rounded-3 shadow-sm mt-3">
             <div class="d-flex align-items-center gap-2">
                   <i class="fa-solid fa-trash-can-arrow-up fs-5"></i>
                   <span
@@ -10,10 +31,12 @@
                   </span>
             </div>
       </a>
+
       <div class="table-responsive">
             <table class="table table-striped table-hover align-middle text-center">
                   <thead class="table-dark">
                         <tr>
+                              <th scope="col">Chọn</th>
                               <th scope="col">#</th>
                               <th scope="col">Tên Khóa Học</th>
                               <th scope="col">Mô Tả</th>
@@ -25,7 +48,10 @@
                         {{#each courses}}
 
                         <tr>
-                              <th scope="row">{{sum @index 1 }}</th>
+                              <td> <input class="form-check-input" type="checkbox" name="courseIds[]"
+                                          value="{{this._id}}">
+                              </td>
+                              <td scope="row">{{sum @index 1 }}</td>
                               <td class="fw-bold">{{this.name}}</td>
                               <td>{{this.description}}</td>
                               <td>
@@ -48,7 +74,9 @@
                               </td>
                         </tr>
                         {{else}}
+
                         <tr>
+
                               <td colspan="5" class="text-center">Không có khóa học nào</td>
                               <a href="/course/create" class="btn btn-primary">Tạo Khóa Học</a>
                         </tr>
@@ -81,6 +109,12 @@
       <input type="hidden" name="_method" value="DELETE">
 </form>
 
+<form action="/course/handle-form-actions" method="POST" id="bulkDeleteForm">
+      <input type="hidden" name="action" value="delete">
+</form>
+
+
+
 <script>
       document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', function () {
@@ -91,6 +125,57 @@
 
       document.querySelector('#confirmDelete').addEventListener('click', function () {
             document.querySelector('#deleteForm').submit();
+      });
+
+
+      document.addEventListener("DOMContentLoaded", function () {
+            var checkboxAll = document.querySelector("#checkbox-all");
+            var checkboxes = document.querySelectorAll('input[name="courseIds[]"]');
+            var btnAction = document.querySelector(".btn-action");
+            var selectAction = document.querySelector(".checkbox-select-all-options");
+
+            // Chọn tất cả checkbox
+            checkboxAll.addEventListener("change", function () {
+                  checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+                  toggleActionButton();
+            });
+
+            // Khi thay đổi checkbox, kiểm tra để bật/tắt nút "Thực Hiện"
+            checkboxes.forEach(checkbox => {
+                  checkbox.addEventListener("change", toggleActionButton);
+            });
+
+            function toggleActionButton() {
+                  var checked = document.querySelectorAll('input[name="courseIds[]"]:checked').length > 0;
+                  btnAction.classList.toggle("disabled", !checked);
+            }
+
+            // Xử lý khi nhấn "Thực Hiện"
+            btnAction.addEventListener("click", function () {
+                  var selectedOption = selectAction.value;
+                  var checkedCheckboxes = document.querySelectorAll('input[name="courseIds[]"]:checked');
+                  var courseIds = Array.from(checkedCheckboxes).map(checkbox => checkbox.value);
+
+                  if (selectedOption === "delete" && courseIds.length > 0) {
+                        if (confirm("Bạn có chắc chắn muốn xóa các khóa học đã chọn không?")) {
+                              var form = document.querySelector("#bulkDeleteForm");
+
+                              // Xóa input cũ (nếu có)
+                              document.querySelectorAll("#bulkDeleteForm input[name='courseIds[]']").forEach(e => e.remove());
+
+                              // Thêm danh sách ID vào form
+                              courseIds.forEach(id => {
+                                    var input = document.createElement("input");
+                                    input.type = "hidden";
+                                    input.name = "courseIds[]";
+                                    input.value = id;
+                                    form.appendChild(input);
+                              });
+
+                              form.submit();
+                        }
+                  }
+            });
       });
 
 </script>

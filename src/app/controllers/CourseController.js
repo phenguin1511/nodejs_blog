@@ -89,6 +89,30 @@ class CourseController {
             }
       }
 
+      // [POST] /course/handle-form-actions
+      async handleFormActions(req, res) {
+            console.log(req.body);
+            try {
+                  switch (req.body.action) {
+                        case 'delete':
+                              await Course.delete({
+                                    _id: { $in: req.body.courseIds }
+                              });
+                              break;
+                        case 'restore':
+                              await Course.restore({ _id: { $in: req.body.courseIds } });
+                              break;
+                        case 'force-delete':
+                              await Course.deleteOne({ _id: { $in: req.body.courseIds } });
+                              break;
+                        default:
+                              console.log('Action is invalid');
+                  }
+                  res.redirect('back');
+            } catch (error) {
+                  console.log(error);
+            }
+      }
 }
 
 module.exports = new CourseController;
